@@ -10,10 +10,10 @@ from torch.autograd import Variable
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2),
-                                   nn.ReLU(),
-                                   nn.MaxPool2d(kernel_size=2))
-        self.conv2 = nn.Sequential(nn.Conv2d(16, 32, 5, 1, 2), nn.ReLU(), nn.MaxPool2d(2))
+        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=1, out_channels=64, kernel_size=5, stride=(1, 1), padding=2),
+                                   nn.ReLU(), nn.MaxPool2d(kernel_size=2))
+        self.conv2 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=32, kernel_size=5, stride=(1, 1), padding=2),
+                                   nn.ReLU(), nn.MaxPool2d(kernel_size=2))
 
         # Fully connected layer, output 10 classes
         self.out = nn.Linear(32 * 7 * 7, 10)
@@ -38,8 +38,8 @@ def train(num_epochs, cnn, loaders):
     for epoch in range(num_epochs):
         for i, (images, labels) in enumerate(loaders['train']):
             # Gives batch data, normalize x when iterate train_loader
-            b_x = Variable(images)  # Batch x
-            b_y = Variable(labels)  # Batch y
+            b_x = Variable(images.cuda())  # Batch x
+            b_y = Variable(labels.cuda())  # Batch y
 
             output = cnn(b_x)[0]
             loss = loss_func(output, b_y)
@@ -63,6 +63,7 @@ def test(cnn, loaders):
     cnn.eval()
     with torch.no_grad():
         for images, labels in loaders['test']:
+            images, labels = images.cuda(), labels.cuda()
             test_output, last_layer = cnn(images)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
             accuracy = (pred_y == labels).sum().item() / float(labels.size(0))
@@ -72,6 +73,7 @@ def test(cnn, loaders):
 if __name__ == '__main__':
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print("Use Hardware: ", "GPU" if torch.cuda.is_available() else "CPU")
 
     train_data = datasets.MNIST(root='data', train=True, transform=ToTensor(), download=True)
     test_data = datasets.MNIST(root='data', train=False, transform=ToTensor())

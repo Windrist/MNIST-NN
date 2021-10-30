@@ -1,7 +1,11 @@
+import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten
+
+# Check GPU with CUDA
+print("Use Hardware: ", "GPU" if len(tf.config.list_physical_devices('GPU')) > 0 else "CPU")
 
 # Download mnist data and split into train and test sets
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -18,8 +22,8 @@ y_test = to_categorical(y_test)
 model = Sequential()
 
 # Add model layers
-model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(28,28,1)))
-model.add(Conv2D(32, kernel_size=3, activation='relu'))
+model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=(28, 28, 1)))
+model.add(Conv2D(32, kernel_size=5, activation='relu'))
 model.add(Flatten())
 model.add(Dense(10, activation='softmax'))
 
@@ -27,5 +31,4 @@ model.add(Dense(10, activation='softmax'))
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=3)
-
+model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10)
